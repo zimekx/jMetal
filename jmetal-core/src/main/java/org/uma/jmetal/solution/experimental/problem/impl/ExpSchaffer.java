@@ -10,7 +10,6 @@ import java.util.Collection;
  * Created by ajnebro on 28/5/15.
  *
  * Schaffer is a double problem
- *
  */
 public class ExpSchaffer<Solution> implements
     ExpProblem<Solution>, SolutionEvaluator<Solution>, SolutionBuilder<Solution> {
