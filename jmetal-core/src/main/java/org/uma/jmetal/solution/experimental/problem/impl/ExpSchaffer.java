@@ -8,10 +8,12 @@ import java.util.Collection;
 
 /**
  * Created by ajnebro on 28/5/15.
+ *
+ * Schaffer is a double problem
+ *
  */
-public class ExpBinaryProblem<Solution>
-    implements ExpProblem<Solution>, SolutionBuilder<Solution>, SolutionEvaluator<Solution> {
-
+public class ExpSchaffer<Solution> implements
+    ExpProblem<Solution>, SolutionEvaluator<Solution>, SolutionBuilder<Solution> {
   @Override public Collection<Variable<Solution, ?>> getVariables() {
     return null;
   }
