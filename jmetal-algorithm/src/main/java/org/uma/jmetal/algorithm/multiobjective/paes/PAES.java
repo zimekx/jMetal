@@ -49,11 +49,12 @@ public class PAES<S extends Solution<?>> extends AbstractEvolutionStrategy<S, Li
    */
   public PAES(Problem<S> problem, int archiveSize, int maxEvaluations, int biSections,
       MutationOperator<S> mutationOperator) {
+	  super(mutationOperator);
     this.problem = problem;
     this.archiveSize = archiveSize;
     this.maxEvaluations = maxEvaluations;
     this.biSections = biSections;
-    this.mutationOperator = mutationOperator;
+    
 
     archive = new AdaptiveGridArchive<S>(archiveSize, biSections, problem.getNumberOfObjectives());
     comparator = new DominanceComparator<S>();

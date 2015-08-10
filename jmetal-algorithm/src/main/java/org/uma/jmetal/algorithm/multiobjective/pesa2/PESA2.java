@@ -47,6 +47,7 @@ public class PESA2<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, Li
   public PESA2(Problem<S> problem, int maxEvaluations, int populationSize, int archiveSize,
       int biSections, CrossoverOperator<S> crossoverOperator,
       MutationOperator<S> mutationOperator, SolutionListEvaluator<S> evaluator) {
+	this(selectionOperator,crossoverOperator,mutationOperator);
     this.problem = problem ;
     this.maxEvaluations = maxEvaluations ;
     this.populationSize = populationSize ;
@@ -56,6 +57,8 @@ public class PESA2<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, Li
     this.crossoverOperator = crossoverOperator;
     this.mutationOperator = mutationOperator;
     this.selectionOperator = new PESA2Selection<S>();
+    
+    this.s
 
     this.evaluator = evaluator ;
 

@@ -57,16 +57,13 @@ public class MOCell<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, L
       Neighborhood<S> neighborhood,
       CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
       SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator) {
-    super();
+    super(selectionOperator,crossoverOperator,mutationOperator);
     this.problem = problem;
     this.maxEvaluations = maxEvaluations;
     this.populationSize = populationSize;
     this.archiveSize = archiveSize ;
     this.archive = new CrowdingDistanceArchive<>(archiveSize);
     this.neighborhood = neighborhood ;
-    this.crossoverOperator = crossoverOperator;
-    this.mutationOperator = mutationOperator;
-    this.selectionOperator = selectionOperator;
     this.dominanceComparator = new DominanceComparator<S>() ;
 
 
@@ -121,11 +118,11 @@ public class MOCell<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, L
     currentNeighbors = neighborhood.getNeighbors(population, currentIndividual);
     currentNeighbors.add(population.get(currentIndividual));
 
-    parents.add(selectionOperator.execute(currentNeighbors));
+    parents.add(getSelectionOperator().execute(currentNeighbors));
     if (archive.size() > 0) {
-      parents.add(selectionOperator.execute(archive.getSolutionList()));
+      parents.add(getSelectionOperator().execute(archive.getSolutionList()));
     } else {
-      parents.add(selectionOperator.execute(currentNeighbors));
+      parents.add(getSelectionOperator().execute(currentNeighbors));
     }
     return parents;
   }
@@ -133,8 +130,8 @@ public class MOCell<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, L
   @Override
   protected List<S> reproduction(List<S> population) {
     List<S> result = new ArrayList<>(1);
-    List<S> offspring = crossoverOperator.execute(population);
-    mutationOperator.execute(offspring.get(0));
+    List<S> offspring = getCrossoverOperator().execute(population);
+    getMutationOperator().execute(offspring.get(0));
     result.add(offspring.get(0));
     return result;
   }

@@ -36,14 +36,10 @@ public class NSGAII<S extends  Solution<?>> extends AbstractGeneticAlgorithm<S, 
   public NSGAII(Problem<S> problem, int maxIterations, int populationSize,
       CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
       SelectionOperator<List<S>, S> selectionOperator, SolutionListEvaluator<S> evaluator) {
-    super() ;
+    super(selectionOperator,crossoverOperator,mutationOperator) ;
     this.problem = problem;
     this.maxIterations = maxIterations;
-    this.populationSize = populationSize;
-
-    this.crossoverOperator = crossoverOperator;
-    this.mutationOperator = mutationOperator;
-    this.selectionOperator = selectionOperator;
+    this.populationSize = populationSize;    
 
     this.evaluator = evaluator;
   }
@@ -78,7 +74,7 @@ public class NSGAII<S extends  Solution<?>> extends AbstractGeneticAlgorithm<S, 
   @Override protected List<S> selection(List<S> population) {
     List<S> matingPopulation = new ArrayList<>(population.size());
     for (int i = 0; i < populationSize; i++) {
-      S solution = selectionOperator.execute(population);
+      S solution = getSelectionOperator().execute(population);
       matingPopulation.add(solution);
     }
 
@@ -92,10 +88,10 @@ public class NSGAII<S extends  Solution<?>> extends AbstractGeneticAlgorithm<S, 
       parents.add(population.get(i));
       parents.add(population.get(i + 1));
 
-      List<S> offspring = crossoverOperator.execute(parents);
+      List<S> offspring = getCrossoverOperator().execute(parents);
 
-      mutationOperator.execute(offspring.get(0));
-      mutationOperator.execute(offspring.get(1));
+      getMutationOperator().execute(offspring.get(0));
+      getMutationOperator().execute(offspring.get(1));
 
       offspringPopulation.add(offspring.get(0));
       offspringPopulation.add(offspring.get(1));
