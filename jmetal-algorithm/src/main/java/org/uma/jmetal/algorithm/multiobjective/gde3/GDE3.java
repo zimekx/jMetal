@@ -59,12 +59,11 @@ public class GDE3 extends AbstractDifferentialEvolution<List<DoubleSolution>> {
   public GDE3(DoubleProblem problem, int populationSize, int maxIterations,
       DifferentialEvolutionSelection selection, DifferentialEvolutionCrossover crossover,
       SolutionListEvaluator<DoubleSolution> evaluator) {
+	super(crossover, selection);
     this.problem = problem;
     this.populationSize = populationSize;
     this.maxIterations = maxIterations;
-    this.crossoverOperator = crossover;
-    this.selectionOperator = selection;
-
+    
     dominanceComparator = new DominanceComparator<DoubleSolution>();
     ranking = new DominanceRanking<DoubleSolution>();
     crowdingDistance = new CrowdingDistance<DoubleSolution>();
@@ -107,8 +106,8 @@ public class GDE3 extends AbstractDifferentialEvolution<List<DoubleSolution>> {
     for (int i = 0; i < populationSize; i++) {
       // Obtain parents. Two parameters are required: the population and the
       //                 index of the current individual
-      selectionOperator.setIndex(i);
-      List<DoubleSolution> parents = selectionOperator.execute(population);
+      getSelectionOperator().setIndex(i);
+      List<DoubleSolution> parents = getSelectionOperator().execute(population);
 
       matingPopulation.addAll(parents);
     }
@@ -120,15 +119,15 @@ public class GDE3 extends AbstractDifferentialEvolution<List<DoubleSolution>> {
     List<DoubleSolution> offspringPopulation = new ArrayList<>();
 
     for (int i = 0; i < populationSize; i++) {
-      crossoverOperator.setCurrentSolution(getPopulation().get(i));
+      getCrossoverOperator().setCurrentSolution(getPopulation().get(i));
       List<DoubleSolution> parents = new ArrayList<>(3);
       for (int j = 0; j < 3; j++) {
         parents.add(matingPopulation.get(0));
         matingPopulation.remove(0);
       }
 
-      crossoverOperator.setCurrentSolution(getPopulation().get(i));
-      List<DoubleSolution> children = crossoverOperator.execute(parents);
+      getCrossoverOperator().setCurrentSolution(getPopulation().get(i));
+      List<DoubleSolution> children = getCrossoverOperator().execute(parents);
 
       offspringPopulation.add(children.get(0));
     }

@@ -57,11 +57,10 @@ public class DifferentialEvolution extends AbstractDifferentialEvolution<DoubleS
   public DifferentialEvolution(DoubleProblem problem, int maxEvaluations, int populationSize,
       DifferentialEvolutionCrossover crossoverOperator,
       DifferentialEvolutionSelection selectionOperator, SolutionListEvaluator<DoubleSolution> evaluator) {
+	super(crossoverOperator, selectionOperator);
     this.problem = problem;
     this.maxEvaluations = maxEvaluations;
     this.populationSize = populationSize;
-    this.crossoverOperator = crossoverOperator;
-    this.selectionOperator = selectionOperator;
     this.evaluator = evaluator;
 
     comparator = new ObjectiveComparator<DoubleSolution>(0);
@@ -108,11 +107,11 @@ public class DifferentialEvolution extends AbstractDifferentialEvolution<DoubleS
     List<DoubleSolution> offspringPopulation = new ArrayList<>();
 
     for (int i = 0; i < populationSize; i++) {
-      selectionOperator.setIndex(i);
-      List<DoubleSolution> parents = selectionOperator.execute(matingPopulation);
+      getSelectionOperator().setIndex(i);
+      List<DoubleSolution> parents = getSelectionOperator().execute(matingPopulation);
 
-      crossoverOperator.setCurrentSolution(matingPopulation.get(i));
-      List<DoubleSolution> children = crossoverOperator.execute(parents);
+      getCrossoverOperator().setCurrentSolution(matingPopulation.get(i));
+      List<DoubleSolution> children = getCrossoverOperator().execute(parents);
 
       offspringPopulation.add(children.get(0));
     }

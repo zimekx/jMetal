@@ -21,9 +21,44 @@ import org.uma.jmetal.solution.DoubleSolution;
 /**
  * Abstract class representing differential evolution (DE) algorithms
  * @author Antonio J. Nebro
+ * @author Juan J. Durillo (a.k.a Juanjo)
+ * 
  * @version 1.0
+ * @version 1.1
+ * Juanjo added a constructor that forces a AbstractDifferentialEvolution to be created always
+ * providing the crossover and selection operators. 
  */
 public abstract class AbstractDifferentialEvolution<Result> extends AbstractEvolutionaryAlgorithm<DoubleSolution, Result> {
-  protected DifferentialEvolutionCrossover crossoverOperator ;
-  protected DifferentialEvolutionSelection selectionOperator ;
+  private DifferentialEvolutionCrossover crossoverOperator ;
+  private DifferentialEvolutionSelection selectionOperator ;
+ 
+  /**
+   * This constructor forces any DifferentialEvolution algorithm 
+   * @param crossoverOperator
+   * @param selectionOperator
+   */
+  		 
+  public AbstractDifferentialEvolution(DifferentialEvolutionCrossover crossoverOperator, DifferentialEvolutionSelection selectionOperator) {
+	  super();
+	  this.crossoverOperator = crossoverOperator;
+	  this.selectionOperator = selectionOperator;
+  }
+
+/**
+   * Returns the crossover operator for this differential evolution algorithm
+   * @return
+   */
+  public DifferentialEvolutionCrossover getCrossoverOperator() {
+	return crossoverOperator;
+  }
+
+  /**
+   * Returns the selection operator for this differential evolution algorithm
+   * @return
+   */
+  public DifferentialEvolutionSelection getSelectionOperator() {
+		return selectionOperator;
+  }
+
+  
 }
