@@ -22,6 +22,8 @@ import org.uma.jmetal.operator.impl.crossover.SBXCrossover;
 import org.uma.jmetal.operator.impl.mutation.PolynomialMutation;
 import org.uma.jmetal.operator.impl.selection.BinaryTournamentSelection;
 import org.uma.jmetal.problem.Problem;
+import org.uma.jmetal.problem.impl.AbstractDoubleProblem;
+import org.uma.jmetal.problem.impl.MultiArmBanditProblem;
 import org.uma.jmetal.runner.AbstractAlgorithmRunner;
 import org.uma.jmetal.solution.DoubleSolution;
 import org.uma.jmetal.util.AlgorithmRunner;
@@ -61,23 +63,24 @@ public class NSGAIIRunner extends AbstractAlgorithmRunner {
       problemName = args[0] ;
       referenceParetoFront = args[1] ;
     } else {
-      problemName = "org.uma.jmetal.problem.multiobjective.zdt.ZDT1";
-      referenceParetoFront = "jmetal-problem/src/test/resources/pareto_fronts/ZDT1.pf" ;
+      problemName = "org.uma.jmetal.problem.multiobjective.zdt.ZDT4";
+      referenceParetoFront = "";//jmetal-problem/src/test/resources/pareto_fronts/ZDT1.pf" ;
     }
 
     problem = ProblemUtils.<DoubleSolution> loadProblem(problemName);
+    MultiArmBanditProblem map = new MultiArmBanditProblem((AbstractDoubleProblem)problem,problem.getNumberOfVariables()/2);
 
     double crossoverProbability = 0.9 ;
     double crossoverDistributionIndex = 20.0 ;
     crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex) ;
 
-    double mutationProbability = 1.0 / problem.getNumberOfVariables() ;
+    double mutationProbability = 1.0 / map.getNumberOfVariables() ;
     double mutationDistributionIndex = 20.0 ;
     mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex) ;
 
     selection = new BinaryTournamentSelection<DoubleSolution>(new RankingAndCrowdingDistanceComparator<DoubleSolution>());
 
-    algorithm = new NSGAIIBuilder<DoubleSolution>(problem, crossover, mutation)
+    algorithm = new NSGAIIBuilder<DoubleSolution>(map, crossover, mutation)
         .setSelectionOperator(selection)
         .setMaxIterations(250)
         .setPopulationSize(100)
