@@ -138,9 +138,17 @@ public class MultiArmBanditProblem extends AbstractDoubleProblem {
 				alreadySelected.add(candidate);
 			}								
 		}
+		/*
 		System.out.print("Selected arms: ");
 		for (Integer selected : this.selectedArms)
 			System.out.print(selected+" ");
+		System.out.println();*/
+		this.printProbability();
+	}
+	
+	public void printProbability() {
+		for (Double pro : this.probabilities)
+			System.out.print(pro+",");
 		System.out.println();
 	}
 	
