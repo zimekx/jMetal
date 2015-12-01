@@ -34,7 +34,7 @@ public class ZDT4 extends AbstractDoubleProblem {
 
   /** Constructor. Creates a default instance of problem ZDT4 (10 decision variables */
   public ZDT4() {
-    this(10);
+    this(512);
   }
 
   /**

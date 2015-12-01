@@ -40,7 +40,7 @@ import java.util.List;
  *
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
-public class NSGAIIRunner extends AbstractAlgorithmRunner {
+public class NSGAIIRunnerBandit extends AbstractAlgorithmRunner {
   /**
    * @param args Command line arguments.
    * @throws JMetalException
@@ -55,31 +55,30 @@ public class NSGAIIRunner extends AbstractAlgorithmRunner {
     MutationOperator<DoubleSolution> mutation;
     SelectionOperator<List<DoubleSolution>, DoubleSolution> selection;
     String referenceParetoFront = "" ;
-
-    String problemName ;
-    if (args.length == 1) {
-      problemName = args[0];
-    } else if (args.length == 2) {
+    int arms = 512;
+    String problemName="" ;
+    if (args.length == 2) {
       problemName = args[0] ;
-      referenceParetoFront = args[1] ;
+      arms = new Integer(args[1]).intValue();
     } else {
-      problemName = "org.uma.jmetal.problem.multiobjective.zdt.ZDT4";
-      referenceParetoFront = "";//jmetal-problem/src/test/resources/pareto_fronts/ZDT1.pf" ;
+      System.out.println("Wrong number of parameters");
+      System.exit(0);
     }
 
     problem = ProblemUtils.<DoubleSolution> loadProblem(problemName);
-    
+    MultiArmBanditProblem map = new MultiArmBanditProblem((AbstractDoubleProblem)problem,arms);
+
     double crossoverProbability = 0.9 ;
     double crossoverDistributionIndex = 20.0 ;
     crossover = new SBXCrossover(crossoverProbability, crossoverDistributionIndex) ;
 
-    double mutationProbability = 1.0 / problem.getNumberOfVariables() ;
+    double mutationProbability = 1.0 / map.getNumberOfVariables() ;
     double mutationDistributionIndex = 20.0 ;
     mutation = new PolynomialMutation(mutationProbability, mutationDistributionIndex) ;
 
     selection = new BinaryTournamentSelection<DoubleSolution>(new RankingAndCrowdingDistanceComparator<DoubleSolution>());
 
-    algorithm = new NSGAIIBuilder<DoubleSolution>(problem, crossover, mutation)
+    algorithm = new NSGAIIBuilder<DoubleSolution>(map, crossover, mutation)
         .setSelectionOperator(selection)
         .setMaxIterations(10000)
         .setPopulationSize(100)
@@ -93,7 +92,7 @@ public class NSGAIIRunner extends AbstractAlgorithmRunner {
 
     JMetalLogger.logger.info("Total execution time: " + computingTime + "ms");
 
-    printFinalSolutionSet(population);
+    printFinalSolutionSet(population,arms+"");
     if (!referenceParetoFront.equals("")) {
       printQualityIndicators(population, referenceParetoFront) ;
     }

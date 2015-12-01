@@ -21,6 +21,25 @@ import java.util.List;
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
 public abstract class AbstractAlgorithmRunner {
+	
+	  /**
+	   * Write the population into two files using the given label
+	   * @param population
+	   * @param label
+	   */
+	
+	public static void printFinalSolutionSet(List<? extends Solution<?>> population, String label) {
+	    new SolutionSetOutput.Printer(population)
+        .setSeparator("\t")
+        .setVarFileOutputContext(new DefaultFileOutputContext("VAR_"+label+".tsv"))
+        .setFunFileOutputContext(new DefaultFileOutputContext("FUN_"+label+".tsv"))
+        .print();
+
+    JMetalLogger.logger.info("Random seed: " + JMetalRandom.getInstance().getSeed());
+    JMetalLogger.logger.info("Objectives values have been written to file FUN_"+label+".tsv");
+    JMetalLogger.logger.info("Variables values have been written to file VAR_"+label+".tsv");		
+	}
+	
   /**
    * Write the population into two files and prints some data on screen
    * @param population

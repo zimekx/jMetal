@@ -1,6 +1,8 @@
 package org.uma.jmetal.problem.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,8 +12,6 @@ import org.uma.jmetal.solution.impl.DefaultDoubleSolution;
 import org.uma.jmetal.solution.impl.MultiArmSolution;
 import org.uma.jmetal.util.archive.impl.NonDominatedSolutionListArchive;
 import org.uma.jmetal.util.pseudorandom.JMetalRandom;
-
-
 /**
  * 
  * @author Juanjo 
@@ -28,16 +28,12 @@ public class MultiArmBanditProblem extends AbstractDoubleProblem {
 	private static 	final long 		serialVersionUID 			= 1L;		
 	private 		final 			AbstractDoubleProblem wrappedProblem;
 	private 		final int		numberOfArms;
-	private			int				cnt							= 0;
 	private			List<Double> 	probabilities				;
 	private			List<Integer>	selectedArms				;
 	private			List<Integer>   producedDominatingSolutions ;
-	private			NonDominatedSolutionListArchive<DoubleSolution> archive =
-					new NonDominatedSolutionListArchive<>();
+	private			NonDominatedSolutionListArchive<DoubleSolution> archive = new NonDominatedSolutionListArchive<>();
 		
 	/**
-	 * Creates an instance of the MultiArmBanditProblem using as
-	 * input another AbstractDoubleProblem
 	 * @param wrappedProblem The problem wrapped by this class
 	 */
 	public MultiArmBanditProblem(AbstractDoubleProblem wrappedProblem, int numberOfArms) {
@@ -74,16 +70,12 @@ public class MultiArmBanditProblem extends AbstractDoubleProblem {
 		
 		MultiArmSolution mas = (MultiArmSolution)solution;
 		wrappedProblem.evaluate(mas.getInternalSolution());
-		cnt++;
 		if (archive.add(solution)) 
 			for (Integer index : this.selectedArms)
 				this.producedDominatingSolutions.set(index, this.producedDominatingSolutions.get(index)+1);
 		
 		
-		if (cnt%500==0)
-			this.updateArms();
-		
-		
+		this.updateArms();
 	}
 	
 	@Override
@@ -107,43 +99,57 @@ public class MultiArmBanditProblem extends AbstractDoubleProblem {
 		}
 	}
 	
-	private void updateArms() {
-		Set<Integer> alreadySelected = new TreeSet<>();
-		int total = 0;
-		for (Integer added : this.producedDominatingSolutions)
-			total += added;
-		
-		Double totalProbability = 0.0;
-		
-		for (int i = 0; i < this.probabilities.size(); i++) {
-			this.probabilities.set(i, this.probabilities.get(i) + (double)this.producedDominatingSolutions.get(i)/(double)total);
-			totalProbability += this.probabilities.get(i);
-		}
-				
+	/* 
+	 * This method select the arms using an epsilon approach
+	 * Epsilon value set to 0.2 (20% of the time we'll be pulling the best arm)
+	 */
+	private void greedyUpdateArms() {
+		//create a list of IndexValue values
+		List<IndexAndValue> indexAndValues = new ArrayList<>(this.producedDominatingSolutions.size());
+		for (int i = 0; i < this.producedDominatingSolutions.size();i++)
+			indexAndValues.add(new IndexAndValue(i,this.producedDominatingSolutions.get(i)));
+	
+		Collections.sort(indexAndValues,new Comparator<IndexAndValue>() {
+			@Override
+			public int compare(IndexAndValue o1, IndexAndValue o2) {
+				if (o1.getValue() > o2.getValue())
+					return -1;
+				else if (o1.getValue() < o2.getValue())
+					return 1;
+				else
+					return 0;
+			}
+		});
 		
 		this.selectedArms.clear();
-		while (this.selectedArms.size() < this.numberOfArms) {
-			
-			int 	candidate = 0;
-			double 	randomProbability = JMetalRandom.getInstance().nextDouble(0.0, totalProbability);
-			double  accumulated = this.probabilities.get(0);
-			while (accumulated < randomProbability) {				
-				accumulated += this.probabilities.get(++candidate);
+		while (selectedArms.size()<this.numberOfArms) {
+			if (JMetalRandom.getInstance().nextDouble() < 0.5) {
+				this.selectedArms.add(indexAndValues.remove(0).getIndex());
+			} else {
+				int randomIndex = JMetalRandom.getInstance().nextInt(0, indexAndValues.size()-1);
+				this.selectedArms.add(indexAndValues.remove(randomIndex).getIndex());
 			}
-			if (candidate == this.wrappedProblem.getNumberOfVariables())
-				candidate--;
-			
-			if (!alreadySelected.contains(candidate)) {
-				this.selectedArms.add(candidate);
-				alreadySelected.add(candidate);
-			}								
 		}
-		/*
-		System.out.print("Selected arms: ");
-		for (Integer selected : this.selectedArms)
-			System.out.print(selected+" ");
-		System.out.println();*/
-		this.printProbability();
+	}
+	
+	private class IndexAndValue {
+		private int index;
+		private int value;
+		public IndexAndValue(int index, int value) {
+			this.index = index;
+			this.value = value;
+		}
+		public int getIndex() {
+			return this.index;
+		}
+		public int getValue() {
+			return this.value;
+		}
+	}
+	
+	
+	private void updateArms() {
+		this.greedyUpdateArms();
 	}
 	
 	public void printProbability() {
