@@ -20,12 +20,12 @@ import java.util.List;
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
 public class NSGAIIMeasures<S extends Solution<?>> extends NSGAII<S> implements Measurable {
-  private CountingMeasure evaluations ;
-  private DurationMeasure durationMeasure ;
-  private SimpleMeasureManager measureManager ;
+  protected CountingMeasure evaluations ;
+  protected DurationMeasure durationMeasure ;
+  protected SimpleMeasureManager measureManager ;
 
-  private BasicMeasure<List<S>> solutionListMeasure ;
-  private BasicMeasure<Integer> numberOfNonDominatedSolutionsInPopulation ;
+  protected BasicMeasure<List<S>> solutionListMeasure ;
+  protected BasicMeasure<Integer> numberOfNonDominatedSolutionsInPopulation ;
 
   /**
    * Constructor
