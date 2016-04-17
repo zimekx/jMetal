@@ -49,6 +49,7 @@ public class NSGAII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, L
   }
 
   @Override protected void updateProgress() {
+
     evaluations += getMaxPopulationSize() ;
   }
 
