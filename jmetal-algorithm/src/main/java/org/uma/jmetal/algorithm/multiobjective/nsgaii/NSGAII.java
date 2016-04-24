@@ -9,6 +9,8 @@ import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.SolutionListUtils;
 import org.uma.jmetal.util.comparator.CrowdingDistanceComparator;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
+import org.uma.jmetal.util.fileoutput.SolutionListOutput;
+import org.uma.jmetal.util.fileoutput.impl.DefaultFileOutputContext;
 import org.uma.jmetal.util.solutionattribute.Ranking;
 import org.uma.jmetal.util.solutionattribute.impl.CrowdingDistance;
 import org.uma.jmetal.util.solutionattribute.impl.DominanceRanking;
@@ -22,9 +24,9 @@ import java.util.List;
  */
 public class NSGAII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, List<S>> {
   protected final int maxEvaluations;
+  protected int iterations;
 
   protected final SolutionListEvaluator<S> evaluator;
-
   protected int evaluations;
 
   /**
@@ -45,12 +47,20 @@ public class NSGAII<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, L
   }
 
   @Override protected void initProgress() {
+    iterations = 1;
     evaluations = getMaxPopulationSize();
   }
 
   @Override protected void updateProgress() {
+    System.out.println("NEW ITERATION " + iterations);
+    new SolutionListOutput((List<? extends S>) getResult())
+        .setSeparator("\t")
+        .setVarFileOutputContext(new DefaultFileOutputContext(experimentDirectoryPath + "VAR" + iterations + ".tsv"))
+        .setFunFileOutputContext(new DefaultFileOutputContext(experimentDirectoryPath + "FUN" + iterations + ".tsv"))
+        .print();
 
     evaluations += getMaxPopulationSize() ;
+    iterations++;
   }
 
   @Override protected boolean isStoppingConditionReached() {

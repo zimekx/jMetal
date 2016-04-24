@@ -85,7 +85,7 @@ public class ComputeQualityIndicators<Result> implements ExperimentComponent {
           resetFile(qualityIndicatorFile);
 
           indicator.setReferenceParetoFront(normalizedReferenceFront);
-          for (int i = 0; i < experiment.getIndependentRuns(); i++) {
+          for (int i = 1; i < experiment.getIterations(); i++) {
             String frontFileName = problemDirectory + "/" +
                 experiment.getOutputParetoFrontFileName() + i + ".tsv";
             String variableFileName = problemDirectory + "/" +
@@ -93,7 +93,7 @@ public class ComputeQualityIndicators<Result> implements ExperimentComponent {
 
             Front front = new ArrayFront(frontFileName) ;
             Front normalizedFront = frontNormalizer.normalize(front) ;
-            List<DoubleSolution> normalizedPopulation = FrontUtils .convertFrontToSolutionList(normalizedFront) ;
+            List<DoubleSolution> normalizedPopulation = FrontUtils.convertFrontToSolutionList(normalizedFront) ;
             Double indicatorValue = (Double)indicator.evaluate(normalizedPopulation) ;
             JMetalLogger.logger.info(indicator.getName() + ": " + indicatorValue) ;
 
@@ -102,7 +102,7 @@ public class ComputeQualityIndicators<Result> implements ExperimentComponent {
         }
       }
     }
-    findBestIndicatorFronts(experiment) ;
+//    findBestIndicatorFronts(experiment) ;
   }
 
   private void writeQualityIndicatorValueToFile(Double indicatorValue, String qualityIndicatorFile) {

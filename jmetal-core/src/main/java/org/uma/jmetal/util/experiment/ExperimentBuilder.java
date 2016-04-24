@@ -36,6 +36,7 @@ public class ExperimentBuilder<S extends Solution<?>, Result> {
   private String outputParetoFrontFileName;
   private String outputParetoSetFileName;
   private int independentRuns;
+  private int iterations;
 
   private List<GenericIndicator<S>> indicatorList ;
 
@@ -157,5 +158,15 @@ public class ExperimentBuilder<S extends Solution<?>, Result> {
 
   public List<GenericIndicator<S>> getIndicatorList() {
     return indicatorList;
+  }
+
+  public int getIterations() {
+    return iterations;
+  }
+
+  public ExperimentBuilder<S, Result> setIterations(int iterations) {
+    this.iterations = iterations;
+
+    return this;
   }
 }

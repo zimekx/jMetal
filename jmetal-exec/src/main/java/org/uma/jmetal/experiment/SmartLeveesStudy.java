@@ -56,13 +56,15 @@ import java.util.List;
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
 public class SmartLeveesStudy {
-  private static final int INDEPENDENT_RUNS = 3;
+  private static final int INDEPENDENT_RUNS = 1;
+  private static final int ITERATIONS = 250;
+  private static final int POPULATION_SIZE = 100;
 
   public static void main(String[] args) throws IOException {
 //    if (args.length != 1) {
 //      throw new JMetalException("Missing argument: experiment base directory") ;
 //    }
-    String experimentBaseDirectory = "/Users/adamzima/semestr8/jmetal-5/jMetal/smart_levees";
+    String experimentBaseDirectory = "/Users/adamzima/semestr8/jmetal-5/jMetal/sm";
 
     List<Problem<IntegerSolution>> problemList = Arrays.<Problem<IntegerSolution>>asList(new SmartLeveesSunny(), new SmartLeveesCloudy());
 
@@ -77,22 +79,21 @@ public class SmartLeveesStudy {
             .setExperimentBaseDirectory(experimentBaseDirectory)
             .setOutputParetoFrontFileName("FUN")
             .setOutputParetoSetFileName("VAR")
-            .setReferenceFrontDirectory("/Users/adamzima/semestr8/jmetal-5/jMetal/smart_levees/pareto_fronts")
+            .setReferenceFrontDirectory("/Users/adamzima/semestr8/jmetal-5/jMetal/smart_levees_study/pareto_fronts")
             .setReferenceFrontFileNames(referenceFrontFileNames)
             .setIndicatorList(Arrays.asList(
-                new Epsilon<IntegerSolution>(), new Spread<IntegerSolution>(), new GenerationalDistance<IntegerSolution>(),
-                new PISAHypervolume<IntegerSolution>(),
-                new InvertedGenerationalDistance<IntegerSolution>(), new InvertedGenerationalDistancePlus<IntegerSolution>()))
+                new PISAHypervolume<IntegerSolution>(), new InvertedGenerationalDistancePlus<IntegerSolution>()))
             .setIndependentRuns(INDEPENDENT_RUNS)
+            .setIterations(ITERATIONS)
             .setNumberOfCores(8)
             .build();
 
     new ExecuteAlgorithms<>(experiment).run();
     new ComputeQualityIndicators<>(experiment).run();
-    new GenerateLatexTablesWithStatistics(experiment).run();
-    new GenerateWilcoxonTestTablesWithR<>(experiment).run();
-    new GenerateFriedmanTestTables<>(experiment).run();
-    new GenerateBoxplotsWithR<>(experiment).setRows(3).setColumns(3).run();
+//    new GenerateLatexTablesWithStatistics(experiment).run();
+//    new GenerateWilcoxonTestTablesWithR<>(experiment).run();
+//    new GenerateFriedmanTestTables<>(experiment).run();
+//    new GenerateBoxplotsWithR<>(experiment).setRows(3).setColumns(3).run();
     System.out.println("KONIEC");
   }
 
@@ -113,15 +114,15 @@ public class SmartLeveesStudy {
       for (int i = 0; i < problemList.size(); i++) {
         Algorithm<List<IntegerSolution>> nsga_ii_algorithm = new NSGAIIBuilder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
             new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0))
-            .setMaxEvaluations(25000)
-            .setPopulationSize(100)
+            .setMaxEvaluations(ITERATIONS * POPULATION_SIZE + 1)
+            .setPopulationSize(POPULATION_SIZE)
             .build();
         algorithms.add(new TaggedAlgorithm<>(nsga_ii_algorithm, "NSGAII", problemList.get(i), run));
 
         Algorithm<List<IntegerSolution>> spea_2_algorithm = new SPEA2Builder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
             new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0))
-            .setMaxIterations(250)
-            .setPopulationSize(100)
+            .setMaxIterations(ITERATIONS + 1)
+            .setPopulationSize(POPULATION_SIZE)
             .build();
         algorithms.add(new TaggedAlgorithm<>(spea_2_algorithm, "SPEA2", problemList.get(i), run));
 

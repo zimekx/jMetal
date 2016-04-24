@@ -21,6 +21,8 @@ import org.uma.jmetal.operator.SelectionOperator;
 import org.uma.jmetal.problem.Problem;
 import org.uma.jmetal.solution.Solution;
 import org.uma.jmetal.util.evaluator.SolutionListEvaluator;
+import org.uma.jmetal.util.fileoutput.SolutionListOutput;
+import org.uma.jmetal.util.fileoutput.impl.DefaultFileOutputContext;
 import org.uma.jmetal.util.solutionattribute.impl.StrengthRawFitness;
 
 import java.util.ArrayList;
@@ -61,6 +63,13 @@ public class SPEA2<S extends Solution<?>> extends AbstractGeneticAlgorithm<S, Li
 
   @Override
   protected void updateProgress() {
+    System.out.println("NEW ITERATION " + iterations);
+    new SolutionListOutput((List<? extends S>) getResult())
+        .setSeparator("\t")
+        .setVarFileOutputContext(new DefaultFileOutputContext(experimentDirectoryPath + "VAR" + iterations + ".tsv"))
+        .setFunFileOutputContext(new DefaultFileOutputContext(experimentDirectoryPath + "FUN" + iterations + ".tsv"))
+        .print();
+
     iterations++;
   }
 

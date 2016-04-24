@@ -19,6 +19,7 @@ public abstract class AbstractGeneticAlgorithm<S extends Solution<?>, Result> ex
   protected SelectionOperator<List<S>, S> selectionOperator ;
   protected CrossoverOperator<S> crossoverOperator ;
   protected MutationOperator<S> mutationOperator ;
+  protected String experimentDirectoryPath;
 
   /* Getters */
   public SelectionOperator<List<S>, S> getSelectionOperator() {
@@ -39,6 +40,7 @@ public abstract class AbstractGeneticAlgorithm<S extends Solution<?>, Result> ex
    */
   public AbstractGeneticAlgorithm(Problem<S> problem) {
     setProblem(problem);
+    this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/jMetal/sm/SmartLeveesStudy/data/" + getName() + "/" + problem.getName() + "/";
   }
 
   /**
