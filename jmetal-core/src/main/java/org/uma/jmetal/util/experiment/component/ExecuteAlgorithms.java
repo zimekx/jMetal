@@ -61,7 +61,8 @@ public class ExecuteAlgorithms<S extends Solution<?>, Result> implements Experim
       //}
     }
     parallelExecutor.parallelExecution();
-    parallelExecutor.stop();  }
+    parallelExecutor.stop();
+  }
 
   private void prepareOutputDirectory() {
     if (experimentDirectoryDoesNotExist()) {

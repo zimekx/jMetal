@@ -14,17 +14,15 @@
 package org.uma.jmetal.experiment;
 
 import org.uma.jmetal.algorithm.Algorithm;
-import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
-import org.uma.jmetal.algorithm.multiobjective.spea2.SPEA2Builder;
+import org.uma.jmetal.algorithm.multiobjective.emas.EmasBuilder;
 import org.uma.jmetal.operator.impl.crossover.IntegerSBXCrossover;
 import org.uma.jmetal.operator.impl.mutation.IntegerPolynomialMutation;
 import org.uma.jmetal.problem.Problem;
-import org.uma.jmetal.problem.multiobjective.SmartLevees;
 import org.uma.jmetal.problem.multiobjective.SmartLeveesCloudy;
-import org.uma.jmetal.problem.multiobjective.SmartLeveesSunny;
 import org.uma.jmetal.qualityindicator.impl.*;
 import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
 import org.uma.jmetal.solution.IntegerSolution;
+import org.uma.jmetal.util.comparator.DominanceComparator;
 import org.uma.jmetal.util.experiment.Experiment;
 import org.uma.jmetal.util.experiment.ExperimentBuilder;
 import org.uma.jmetal.util.experiment.component.*;
@@ -35,30 +33,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Example of experimental study based on solving the ZDT problems with four versions of NSGA-II, each
- * of them applying a different crossover probability (from 0.7 to 1.0).
- * <p/>
- * This experiment assumes that the reference Pareto front are known, so the names of files containing
- * them and the directory where they are located must be specified.
- * <p/>
- * Six quality indicators are used for performance assessment.
- * <p/>
- * The steps to carry out the experiment are:
- * 1. Configure the experiment
- * 2. Execute the algorithms
- * 3. Compute the quality indicators
- * 4. Generate Latex tables reporting means and medians
- * 5. Generate Latex tables with the result of applying the Wilcoxon Rank Sum Test
- * 6. Generate Latex tables with the ranking obtained by applying the Friedman test
- * 7. Generate R scripts to obtain boxplots
- *
- * @author Antonio J. Nebro <antonio@lcc.uma.es>
- */
 public class SmartLeveesStudy {
   private static final int INDEPENDENT_RUNS = 1;
-  private static final int ITERATIONS = 250;
-  private static final int POPULATION_SIZE = 100;
+  private static final int ITERATIONS = 10;
+  private static final int POPULATION_SIZE = 5;
 
   public static void main(String[] args) throws IOException {
 //    if (args.length != 1) {
@@ -66,11 +44,13 @@ public class SmartLeveesStudy {
 //    }
     String experimentBaseDirectory = "/Users/adamzima/semestr8/jmetal-5/jMetal/sm";
 
-    List<Problem<IntegerSolution>> problemList = Arrays.<Problem<IntegerSolution>>asList(new SmartLeveesSunny(), new SmartLeveesCloudy());
+//    List<Problem<IntegerSolution>> problemList = Arrays.<Problem<IntegerSolution>>asList(new SmartLeveesSunny(), new SmartLeveesCloudy());
+    List<Problem<IntegerSolution>> problemList = Arrays.<Problem<IntegerSolution>>asList(new SmartLeveesCloudy());
 
     List<TaggedAlgorithm<List<IntegerSolution>>> algorithmList = configureAlgorithmList(problemList, INDEPENDENT_RUNS);
 
-    List<String> referenceFrontFileNames = Arrays.asList("SmartLeveesSunny.pf", "SmartLeveesCloudy.pf");
+//    List<String> referenceFrontFileNames = Arrays.asList("SmartLeveesSunny.pf", "SmartLeveesCloudy.pf");
+    List<String> referenceFrontFileNames = Arrays.asList("SmartLeveesCloudy.pf");
 
     Experiment<IntegerSolution, List<IntegerSolution>> experiment =
         new ExperimentBuilder<IntegerSolution, List<IntegerSolution>>("SmartLeveesStudy")
@@ -85,7 +65,7 @@ public class SmartLeveesStudy {
                 new PISAHypervolume<IntegerSolution>(), new InvertedGenerationalDistancePlus<IntegerSolution>()))
             .setIndependentRuns(INDEPENDENT_RUNS)
             .setIterations(ITERATIONS)
-            .setNumberOfCores(8)
+            .setNumberOfCores(1)
             .build();
 
     new ExecuteAlgorithms<>(experiment).run();
@@ -112,19 +92,24 @@ public class SmartLeveesStudy {
     for (int run = 0; run < independentRuns; run++) {
 
       for (int i = 0; i < problemList.size(); i++) {
-        Algorithm<List<IntegerSolution>> nsga_ii_algorithm = new NSGAIIBuilder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
-            new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0))
-            .setMaxEvaluations(ITERATIONS * POPULATION_SIZE + 1)
-            .setPopulationSize(POPULATION_SIZE)
-            .build();
-        algorithms.add(new TaggedAlgorithm<>(nsga_ii_algorithm, "NSGAII", problemList.get(i), run));
+//        Algorithm<List<IntegerSolution>> nsga_ii_algorithm = new NSGAIIBuilder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
+//            new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0))
+//            .setMaxEvaluations(ITERATIONS * POPULATION_SIZE + 1)
+//            .setPopulationSize(POPULATION_SIZE)
+//            .build();
+//        algorithms.add(new TaggedAlgorithm<>(nsga_ii_algorithm, "NSGAII", problemList.get(i), run));
 
-        Algorithm<List<IntegerSolution>> spea_2_algorithm = new SPEA2Builder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
-            new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0))
+        Algorithm<List<IntegerSolution>> emas_algorithm = new EmasBuilder<>(problemList.get(i), new IntegerSBXCrossover(1.0, 5),
+            new IntegerPolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0), new DominanceComparator())
             .setMaxIterations(ITERATIONS + 1)
             .setPopulationSize(POPULATION_SIZE)
+            .setStartingEnergy(5)
+            .setReproductionThreshold(8)
+            .setMeetingCost(2)
+            .setReproductionCost(3)
+            .setDeathThreshold(2)
             .build();
-        algorithms.add(new TaggedAlgorithm<>(spea_2_algorithm, "SPEA2", problemList.get(i), run));
+        algorithms.add(new TaggedAlgorithm<>(emas_algorithm, "EMAS", problemList.get(i), run));
 
       }
     }
