@@ -39,8 +39,18 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
   }
 
   @Override
-  protected void die() {
+  protected void die(List<AbstractEmasAgent<S>> nextPopulation) {
     System.out.println("Death!");
+
+    System.out.println("\t"+this.solution.getObjective(0));
+    System.out.println("\t"+this.solution.getObjective(1));
+
+    S solution = (S) problem.createSolution();
+    problem.evaluate(solution);
+
+    this.solution = solution;
+
+    nextPopulation.add(this);
   }
 
   public void transferEnergy(int amount) {
@@ -66,6 +76,12 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
       worseAgent = this;
     }
 
+    System.out.println("\t"+betterAgent.solution.getObjective(0));
+    System.out.println("\t"+worseAgent.solution.getObjective(0));
+    System.out.println("\t"+betterAgent.solution.getObjective(1));
+    System.out.println("\t"+worseAgent.solution.getObjective(1));
+
+
     betterAgent.transferEnergy(meetingCost);
     worseAgent.transferEnergy(-meetingCost);
   }
@@ -75,8 +91,10 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     List<AbstractEmasAgent<S>> possibleParents = population.stream().filter(
         a -> (a.getEnergyLevel() > reproductionThreshold && a != this)
     ).collect(Collectors.toList());
-    if (possibleParents.size() < 1)
+    if (possibleParents.size() < 1) {
+      nextPopulation.add(this);
       return;
+    }
 
     System.out.println("Reproduction!");
 
@@ -89,6 +107,8 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     List<S> offspring = crossoverOperator.execute(parents);
     mutationOperator.execute(offspring.get(0));
     mutationOperator.execute(offspring.get(1));
+    problem.evaluate(offspring.get(0));
+    problem.evaluate(offspring.get(1));
 
     EmasAgent<S> firstChild = new EmasAgent<>(offspring.get(0), problem, startingEnergy,
         deathThreshold, reproductionThreshold, meetingCost, reproductionCost,
@@ -100,10 +120,13 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     this.transferEnergy(-reproductionCost);
     otherParent.transferEnergy(-reproductionCost);
 
-    nextPopulation.add(this);
-    nextPopulation.add(otherParent);
-    nextPopulation.add(firstChild);
-    nextPopulation.add(secondChild);
+    List<AbstractEmasAgent<S>> competitors = new ArrayList<>(4);
+    competitors.add(this);
+    competitors.add(otherParent);
+    competitors.add(firstChild);
+    competitors.add(secondChild);
+
+    nextPopulation.addAll(getTwoBestAgents(competitors));
   }
 
   private EmasAgent<S> getRandomAgent(List<AbstractEmasAgent<S>> population) {
@@ -112,5 +135,37 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
       agent = (EmasAgent<S>) population.get(JMetalRandom.getInstance().nextInt(0, population.size()-1));
     } while (agent == this);
     return agent;
+  }
+
+  private List<AbstractEmasAgent<S>> getTwoBestAgents(List<AbstractEmasAgent<S>> competitors) {
+    Map<AbstractEmasAgent<S>, Integer> wins = new HashMap<>();
+    wins.put(competitors.get(0), 0);
+    wins.put(competitors.get(1), 0);
+    wins.put(competitors.get(2), 0);
+    wins.put(competitors.get(3), 0);
+
+    for (int i = 0; i < 3; i++) {
+      for (int j = i + 1; j < 4; j++) {
+        AbstractEmasAgent<S> agent1 = (AbstractEmasAgent<S>) wins.keySet().toArray()[i];
+        AbstractEmasAgent<S> agent2 = (AbstractEmasAgent<S>) wins.keySet().toArray()[j];
+
+        int result = dominanceComparator.compare(agent1.getSolution(), agent2.getSolution());
+        if (result == 0) {
+          wins.put(agent1, wins.get(agent1) + 1);
+          wins.put(agent2, wins.get(agent2) + 1);
+        } else if (result == -1) {
+          wins.put(agent1, wins.get(agent1) + 1);
+        } else {
+          wins.put(agent2, wins.get(agent2) + 1);
+        }
+      }
+    }
+
+    List<AbstractEmasAgent<S>> sorted = new LinkedList<>();
+    wins.entrySet().
+        stream().
+        sorted(Map.Entry.comparingByValue()).
+        forEachOrdered(e -> sorted.add(e.getKey()));
+    return sorted.subList(0, 2);
   }
 }

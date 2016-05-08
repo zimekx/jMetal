@@ -14,10 +14,13 @@
 package org.uma.jmetal.experiment;
 
 import org.uma.jmetal.algorithm.Algorithm;
+import org.uma.jmetal.algorithm.multiobjective.emas.EmasBuilder;
 import org.uma.jmetal.algorithm.multiobjective.nsgaii.NSGAIIBuilder;
 import org.uma.jmetal.algorithm.multiobjective.smpso.SMPSOBuilder;
 import org.uma.jmetal.algorithm.multiobjective.spea2.SPEA2Builder;
+import org.uma.jmetal.operator.impl.crossover.IntegerSBXCrossover;
 import org.uma.jmetal.operator.impl.crossover.SBXCrossover;
+import org.uma.jmetal.operator.impl.mutation.IntegerPolynomialMutation;
 import org.uma.jmetal.operator.impl.mutation.PolynomialMutation;
 import org.uma.jmetal.problem.DoubleProblem;
 import org.uma.jmetal.problem.Problem;
@@ -25,8 +28,10 @@ import org.uma.jmetal.problem.multiobjective.zdt.*;
 import org.uma.jmetal.qualityindicator.impl.*;
 import org.uma.jmetal.qualityindicator.impl.hypervolume.PISAHypervolume;
 import org.uma.jmetal.solution.DoubleSolution;
+import org.uma.jmetal.solution.IntegerSolution;
 import org.uma.jmetal.util.JMetalException;
 import org.uma.jmetal.util.archive.impl.CrowdingDistanceArchive;
+import org.uma.jmetal.util.comparator.DominanceComparator;
 import org.uma.jmetal.util.evaluator.impl.SequentialSolutionListEvaluator;
 import org.uma.jmetal.util.experiment.Experiment;
 import org.uma.jmetal.util.experiment.ExperimentBuilder;
@@ -59,19 +64,17 @@ import java.util.List;
  * @author Antonio J. Nebro <antonio@lcc.uma.es>
  */
 
-public class ZDTStudy {
+public class EmasZdtStudy {
   private static final int INDEPENDENT_RUNS = 1 ;
+  private static final int ITERATIONS = 100;
+  private static final int POPULATION_SIZE = 10;
 
   public static void main(String[] args) throws IOException {
-    if (args.length != 1) {
-      throw new JMetalException("Missing argument: experiment base directory") ;
-    }
-    String experimentBaseDirectory = args[0] ;
+    String experimentBaseDirectory = "/Users/adamzima/semestr8/jmetal-5/jMetal/experiment";
 
-    List<Problem<DoubleSolution>> problemList = Arrays.<Problem<DoubleSolution>>asList(new ZDT1(), new ZDT2(),
-        new ZDT3(), new ZDT4(), new ZDT6()) ;
+    List<Problem<DoubleSolution>> problemList = Arrays.<Problem<DoubleSolution>>asList(new ZDT1()); //, new ZDT2(), new ZDT3(), new ZDT4(), new ZDT6()) ;
 
-    List<String> referenceFrontFileNames = Arrays.asList("ZDT1.pf", "ZDT2.pf", "ZDT3.pf", "ZDT4.pf", "ZDT6.pf") ;
+    List<String> referenceFrontFileNames = Arrays.asList("ZDT1.pf"); //, "ZDT2.pf", "ZDT3.pf", "ZDT4.pf", "ZDT6.pf") ;
 
     List<TaggedAlgorithm<List<DoubleSolution>>> algorithmList = configureAlgorithmList(problemList, INDEPENDENT_RUNS) ;
 
@@ -79,31 +82,29 @@ public class ZDTStudy {
         new ExperimentBuilder<DoubleSolution, List<DoubleSolution>>("ZDTStudy")
             .setAlgorithmList(algorithmList)
             .setProblemList(problemList)
-            .setReferenceFrontDirectory("/pareto_fronts")
+            .setReferenceFrontDirectory("/Users/adamzima/semestr8/jmetal-5/jMetal/jmetal-core/src/main/resources/pareto_fronts/")
             .setReferenceFrontFileNames(referenceFrontFileNames)
             .setExperimentBaseDirectory(experimentBaseDirectory)
             .setOutputParetoFrontFileName("FUN")
             .setOutputParetoSetFileName("VAR")
             .setIndicatorList(Arrays.asList(
-                new Epsilon<DoubleSolution>(), new Spread<DoubleSolution>(), new GenerationalDistance<DoubleSolution>(),
-                new PISAHypervolume<DoubleSolution>(),
-                new InvertedGenerationalDistance<DoubleSolution>(),
-                new InvertedGenerationalDistancePlus<DoubleSolution>()))
+                new PISAHypervolume<DoubleSolution>(), new InvertedGenerationalDistancePlus<DoubleSolution>()))
             .setIndependentRuns(INDEPENDENT_RUNS)
-            .setNumberOfCores(8)
+            .setIterations(ITERATIONS)
+            .setNumberOfCores(1)
             .build();
 
     new ExecuteAlgorithms<>(experiment).run();
     new ComputeQualityIndicators<>(experiment).run() ;
-    new GenerateLatexTablesWithStatistics(experiment).run() ;
-    new GenerateWilcoxonTestTablesWithR<>(experiment).run() ;
-    new GenerateFriedmanTestTables<>(experiment).run();
-    new GenerateBoxplotsWithR<>(experiment).setRows(3).setColumns(3).setDisplayNotch().run() ;
+//    new GenerateLatexTablesWithStatistics(experiment).run() ;
+//    new GenerateWilcoxonTestTablesWithR<>(experiment).run() ;
+//    new GenerateFriedmanTestTables<>(experiment).run();
+//    new GenerateBoxplotsWithR<>(experiment).setRows(3).setColumns(3).setDisplayNotch().run() ;
   }
 
   /**
-   * The algorithm list is composed of pairs {@link Algorithm} + {@link Problem} which form part of a
-   * {@link TaggedAlgorithm}, which is a decorator for class {@link Algorithm}.
+   * The algorithm list is composed of pairs {@link org.uma.jmetal.algorithm.Algorithm} + {@link org.uma.jmetal.problem.Problem} which form part of a
+   * {@link org.uma.jmetal.util.experiment.util.TaggedAlgorithm}, which is a decorator for class {@link org.uma.jmetal.algorithm.Algorithm}.
    *
    * @param problemList
    * @return
@@ -115,30 +116,18 @@ public class ZDTStudy {
 
     for (int run = 0; run < independentRuns; run++) {
       for (int i = 0; i < problemList.size(); i++) {
-        double mutationProbability = 1.0 / problemList.get(i).getNumberOfVariables();
-        double mutationDistributionIndex = 20.0;
-        Algorithm<List<DoubleSolution>> algorithm = new SMPSOBuilder((DoubleProblem) problemList.get(i),
-            new CrowdingDistanceArchive<DoubleSolution>(100))
-            .setMutation(new PolynomialMutation(mutationProbability, mutationDistributionIndex))
-            .setMaxIterations(250)
-            .setSwarmSize(100)
-            .setSolutionListEvaluator(new SequentialSolutionListEvaluator<DoubleSolution>())
-            .build();
-        algorithms.add(new TaggedAlgorithm<List<DoubleSolution>>(algorithm, problemList.get(i), run));
-      }
+        Algorithm<List<DoubleSolution>> emas_algorithm = new EmasBuilder<>(problemList.get(i), new SBXCrossover(1.0, 5),
+            new PolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 10.0), new DominanceComparator())
+              .setMaxIterations(ITERATIONS + 1)
+              .setPopulationSize(POPULATION_SIZE)
+              .setStartingEnergy(5)
+              .setReproductionThreshold(6)
+              .setMeetingCost(2)
+              .setReproductionCost(2)
+              .setDeathThreshold(2)
+              .build();
+        algorithms.add(new TaggedAlgorithm<>(emas_algorithm, "EMAS", problemList.get(i), run));
 
-      for (int i = 0; i < problemList.size(); i++) {
-        Algorithm<List<DoubleSolution>> algorithm = new NSGAIIBuilder<DoubleSolution>(problemList.get(i), new SBXCrossover(1.0, 20.0),
-            new PolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 20.0))
-            .build();
-        algorithms.add(new TaggedAlgorithm<List<DoubleSolution>>(algorithm, problemList.get(i), run));
-      }
-
-      for (int i = 0; i < problemList.size(); i++) {
-        Algorithm<List<DoubleSolution>> algorithm = new SPEA2Builder<DoubleSolution>(problemList.get(i), new SBXCrossover(1.0, 10.0),
-            new PolynomialMutation(1.0 / problemList.get(i).getNumberOfVariables(), 20.0))
-            .build();
-        algorithms.add(new TaggedAlgorithm<List<DoubleSolution>>(algorithm, problemList.get(i), run));
       }
     }
     return algorithms ;

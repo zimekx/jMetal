@@ -40,7 +40,7 @@ public abstract class AbstractGeneticAlgorithm<S extends Solution<?>, Result> ex
    */
   public AbstractGeneticAlgorithm(Problem<S> problem) {
     setProblem(problem);
-    this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/jMetal/sm/SmartLeveesStudy/data/" + getName() + "/" + problem.getName() + "/";
+    this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/data/NSGAIIStudy/data/NSGAIIa/" + problem.getName() + "/";
   }
 
   /**

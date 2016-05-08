@@ -53,12 +53,14 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
     this.mutationOperator = mutationOperator;
     this.dominanceComparator = dominanceComparator;
 
-    this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/jMetal/sm/SmartLeveesStudy/data/" + getName() + "/" + problem.getName() + "/";
+    this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/jMetal/experiment/ZDTStudy/data/" + getName() + "/" + problem.getName() + "/";
   }
 
   @Override
   public List<S> getResult() {
-    return SolutionListUtils.getNondominatedSolutions(getCurrentObjectives());
+//    return SolutionListUtils.getNondominatedSolutions(getCurrentObjectives());
+    List<S> currentObjectives = getCurrentObjectives();
+    return currentObjectives;
   }
 
   @Override
@@ -68,7 +70,6 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
 
   @Override
   protected void updateProgress() {
-//    System.out.println("NEW ITERATION " + iterations);
     new SolutionListOutput((List<? extends S>) getResult())
         .setSeparator("\t")
         .setVarFileOutputContext(new DefaultFileOutputContext(experimentDirectoryPath + "VAR" + iterations + ".tsv"))
@@ -87,7 +88,7 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
   protected List<EmasAgent<S>> createInitialPopulation() {
     List<EmasAgent<S>> population = new ArrayList<>();
 
-    for (int i = 0; i < populationSize; i++) {
+    for (int i = 0; i < populationSize - 1; i++) {
       S solution = problem.createSolution();
       problem.evaluate(solution);
 
