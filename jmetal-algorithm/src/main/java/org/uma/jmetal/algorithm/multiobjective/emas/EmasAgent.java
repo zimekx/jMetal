@@ -55,12 +55,29 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     this.energyLevel += amount;
   }
 
+  private int compareDominatedCounter(AbstractEmasAgent<S> otherAgent) {
+    if (this.dominatedCounter < otherAgent.dominatedCounter) return -1;
+    if (this.dominatedCounter > otherAgent.dominatedCounter) return 1;
+    return 0;
+  }
+
+  protected int compare(AbstractEmasAgent<S> otherAgent) {
+    int compareResult = dominanceComparator.compare(this.solution, otherAgent.getSolution());
+    if (compareResult != 0) return compareResult;
+    return compareDominatedCounter(otherAgent);
+  }
+
   protected void meet(List<AbstractEmasAgent<S>> population) {
     EmasAgent<S> otherAgent = getRandomAgent(population);
-    int compareResult = dominanceComparator.compare(this.solution, otherAgent.getSolution());
+
+    this.meetingCounter++;
+    otherAgent.meetingCounter++;
 
     EmasAgent<S> betterAgent;
     EmasAgent<S> worseAgent;
+
+
+    int compareResult = compare(otherAgent);
     if (compareResult == 0) {
       return;
     }
@@ -73,6 +90,8 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
       betterAgent = otherAgent;
       worseAgent = this;
     }
+
+    worseAgent.dominatedCounter++;
 
     betterAgent.printStats();
     worseAgent.printStats();

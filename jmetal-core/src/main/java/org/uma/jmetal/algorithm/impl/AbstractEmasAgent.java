@@ -13,6 +13,10 @@ public abstract class AbstractEmasAgent<S extends Solution> {
   protected final int meetingCost;
   protected final int reproductionCost;
 
+  public int meetingCounter;
+  public int neighbourCounter;
+  public int dominatedCounter;
+
   protected S solution;
   protected int energyLevel;
 
@@ -25,6 +29,9 @@ public abstract class AbstractEmasAgent<S extends Solution> {
     this.reproductionThreshold = reproductionThreshold;
     this.meetingCost = meetingCost;
     this.reproductionCost = reproductionCost;
+    this.meetingCounter = 0;
+    this.neighbourCounter = 0;
+    this.dominatedCounter = 0;
   }
 
   public abstract S getSolution();
@@ -53,6 +60,11 @@ public abstract class AbstractEmasAgent<S extends Solution> {
   }
 
   public void printStats() {
-    System.out.println("\t" + this.solution.getObjective(0) + "\t" + this.solution.getObjective(1) + "\t" + this.energyLevel);
+    System.out.println(
+        "\t" + this.solution.getObjective(0) +
+        "\t" + this.solution.getObjective(1) +
+        "\t" + this.energyLevel +
+        "\t" + this.dominatedCounter
+    );
   }
 }

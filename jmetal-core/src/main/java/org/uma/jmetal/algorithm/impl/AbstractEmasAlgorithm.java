@@ -40,7 +40,6 @@ public abstract class AbstractEmasAlgorithm<S extends Solution<?>, R, A extends 
       while(it < population.size()) {
         A agent = population.get(it);
         agent.executeLifeStep(population);
-//        agent.executeLifeStep(population.subList(it, population.size() - 1), nextPopulation);
         it++;
       }
 
