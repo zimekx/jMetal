@@ -39,22 +39,20 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
   }
 
   @Override
-  protected void die(List<AbstractEmasAgent<S>> nextPopulation) {
+  protected void die() {
     System.out.println("Death!");
 
-    System.out.println("\t"+this.solution.getObjective(0));
-    System.out.println("\t"+this.solution.getObjective(1));
+    this.printStats();
 
     S solution = (S) problem.createSolution();
     problem.evaluate(solution);
 
+    this.energyLevel = startingEnergy;
     this.solution = solution;
-
-    nextPopulation.add(this);
   }
 
   public void transferEnergy(int amount) {
-    energyLevel += amount;
+    this.energyLevel += amount;
   }
 
   protected void meet(List<AbstractEmasAgent<S>> population) {
@@ -76,23 +74,19 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
       worseAgent = this;
     }
 
-    System.out.println("\t"+betterAgent.solution.getObjective(0));
-    System.out.println("\t"+worseAgent.solution.getObjective(0));
-    System.out.println("\t"+betterAgent.solution.getObjective(1));
-    System.out.println("\t"+worseAgent.solution.getObjective(1));
-
+    betterAgent.printStats();
+    worseAgent.printStats();
 
     betterAgent.transferEnergy(meetingCost);
     worseAgent.transferEnergy(-meetingCost);
   }
 
   @Override
-  protected void reproduce(List<AbstractEmasAgent<S>> population, List<AbstractEmasAgent<S>> nextPopulation) {
+  protected void reproduce(List<AbstractEmasAgent<S>> population) {
     List<AbstractEmasAgent<S>> possibleParents = population.stream().filter(
         a -> (a.getEnergyLevel() > reproductionThreshold && a != this)
     ).collect(Collectors.toList());
     if (possibleParents.size() < 1) {
-      nextPopulation.add(this);
       return;
     }
 
@@ -126,7 +120,14 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     competitors.add(firstChild);
     competitors.add(secondChild);
 
-    nextPopulation.addAll(getTwoBestAgents(competitors));
+    population.remove(this);
+    population.remove(otherParent);
+    List<AbstractEmasAgent<S>> winners = getTwoBestAgents(competitors);
+    this.printStats();
+    otherParent.printStats();
+    winners.get(0).printStats();
+    winners.get(1).printStats();
+    population.addAll(winners);
   }
 
   private EmasAgent<S> getRandomAgent(List<AbstractEmasAgent<S>> population) {
@@ -166,6 +167,6 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
         stream().
         sorted(Map.Entry.comparingByValue()).
         forEachOrdered(e -> sorted.add(e.getKey()));
-    return sorted.subList(0, 2);
+    return sorted.subList(2, 4);
   }
 }

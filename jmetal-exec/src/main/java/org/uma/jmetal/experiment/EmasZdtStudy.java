@@ -66,8 +66,8 @@ import java.util.List;
 
 public class EmasZdtStudy {
   private static final int INDEPENDENT_RUNS = 1 ;
-  private static final int ITERATIONS = 100;
-  private static final int POPULATION_SIZE = 10;
+  private static final int ITERATIONS = 250;
+  private static final int POPULATION_SIZE = 100;
 
   public static void main(String[] args) throws IOException {
     String experimentBaseDirectory = "/Users/adamzima/semestr8/jmetal-5/jMetal/experiment";

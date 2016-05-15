@@ -36,18 +36,14 @@ public abstract class AbstractEmasAlgorithm<S extends Solution<?>, R, A extends 
     while (!isStoppingConditionReached()) {
       System.out.println("Iteration: " + i++);
 
-      List<A> nextPopulation = new ArrayList<>();
-
-
       int it = 0;
       while(it < population.size()) {
         A agent = population.get(it);
-        agent.executeLifeStep(population, nextPopulation);
+        agent.executeLifeStep(population);
 //        agent.executeLifeStep(population.subList(it, population.size() - 1), nextPopulation);
         it++;
       }
 
-      population = nextPopulation;
       System.out.println("Population size: " + population.size());
       updateProgress();
     }

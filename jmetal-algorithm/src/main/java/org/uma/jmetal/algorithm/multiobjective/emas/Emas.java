@@ -12,6 +12,7 @@ import org.uma.jmetal.util.fileoutput.impl.DefaultFileOutputContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 /**
@@ -86,7 +87,7 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
 
   @Override
   protected List<EmasAgent<S>> createInitialPopulation() {
-    List<EmasAgent<S>> population = new ArrayList<>();
+    List<EmasAgent<S>> population = new CopyOnWriteArrayList<>();
 
     for (int i = 0; i < populationSize - 1; i++) {
       S solution = problem.createSolution();

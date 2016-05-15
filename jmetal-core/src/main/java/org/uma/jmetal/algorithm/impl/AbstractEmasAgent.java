@@ -29,28 +29,30 @@ public abstract class AbstractEmasAgent<S extends Solution> {
 
   public abstract S getSolution();
 
-  protected abstract void die(List<AbstractEmasAgent<S>> nextPopulation);
+  protected abstract void die();
 
   protected abstract void meet(List<AbstractEmasAgent<S>> population);
 
-  protected abstract void reproduce(List<AbstractEmasAgent<S>> population, List<AbstractEmasAgent<S>> nextPopulation);
+  protected abstract void reproduce(List<AbstractEmasAgent<S>> population);
 
   public int getEnergyLevel() {
     return energyLevel;
   }
 
-  public void executeLifeStep(List<AbstractEmasAgent<S>> population, List<AbstractEmasAgent<S>> nextPopulation) {
-    if (energyLevel <= this.deathThreshold) {
-      die(nextPopulation);
+  public void executeLifeStep(List<AbstractEmasAgent<S>> population) {
+    if (this.energyLevel <= this.deathThreshold) {
+      die();
       return;
     }
 
     meet(population);
-    if (energyLevel > this.reproductionThreshold) {
+    if (this.energyLevel > this.reproductionThreshold) {
       System.out.println("Reproduction");
-      reproduce(population, nextPopulation);
-    } else {
-      nextPopulation.add(this);
+      reproduce(population);
     }
+  }
+
+  public void printStats() {
+    System.out.println("\t" + this.solution.getObjective(0) + "\t" + this.solution.getObjective(1) + "\t" + this.energyLevel);
   }
 }
