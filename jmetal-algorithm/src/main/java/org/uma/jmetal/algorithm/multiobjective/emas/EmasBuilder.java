@@ -33,6 +33,7 @@ public class EmasBuilder<S extends Solution<?>> implements AlgorithmBuilder<Emas
   private int meetingCost;
   private int startingEnergy;
   private int reproductionCost;
+  private double neighbourhoodThreshold;
 
   /**
    * EmasBuilder constructor
@@ -45,6 +46,7 @@ public class EmasBuilder<S extends Solution<?>> implements AlgorithmBuilder<Emas
     this.crossoverOperator = crossoverOperator ;
     this.mutationOperator = mutationOperator ;
     this.dominanceComparator = dominanceComparator;
+    this.neighbourhoodThreshold = 0;
   }
 
   public EmasBuilder<S> setMaxIterations(int maxIterations) {
@@ -93,7 +95,7 @@ public class EmasBuilder<S extends Solution<?>> implements AlgorithmBuilder<Emas
   public Emas<S> build() {
     return new Emas<S>(problem, maxIterations, populationSize, startingEnergy, deathThreshold,
         reproductionThreshold, meetingCost, reproductionCost, crossoverOperator,
-        mutationOperator, dominanceComparator);
+        mutationOperator, dominanceComparator, neighbourhoodThreshold);
   }
 
   public Problem<S> getProblem() {
@@ -118,6 +120,12 @@ public class EmasBuilder<S extends Solution<?>> implements AlgorithmBuilder<Emas
 
   public EmasBuilder setReproductionCost(int energy) {
     this.reproductionCost = energy;
+
+    return this;
+  }
+
+  public EmasBuilder setNeighbourhoodThreshold(double neighbourhoodThreshold) {
+    this.neighbourhoodThreshold = neighbourhoodThreshold;
 
     return this;
   }

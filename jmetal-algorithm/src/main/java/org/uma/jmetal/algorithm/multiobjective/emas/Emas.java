@@ -33,13 +33,14 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
   private final MutationOperator<S> mutationOperator;
   private final Comparator<S> dominanceComparator;
   private final String experimentDirectoryPath;
+  private final double neighbourhoodThreshold;
 
   private int iterations;
 
   public Emas(Problem<S> problem, int maxIterations, int populationSize, int startingEnergy,
               int deathThreshold, int reproductionThreshold, int meetingCost, int reproductionCost,
               CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
-              Comparator<S> dominanceComparator) {
+              Comparator<S> dominanceComparator, double neighbourhoodThreshold) {
     this.problem = problem;
     this.maxIterations = maxIterations;
     this.populationSize = populationSize;
@@ -53,6 +54,8 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
     this.crossoverOperator = crossoverOperator;
     this.mutationOperator = mutationOperator;
     this.dominanceComparator = dominanceComparator;
+
+    this.neighbourhoodThreshold = neighbourhoodThreshold;
 
     this.experimentDirectoryPath = "/Users/adamzima/semestr8/jmetal-5/jMetal/experiment/ZDTStudy/data/" + getName() + "/" + problem.getName() + "/";
   }
@@ -95,7 +98,7 @@ public class Emas<S extends Solution<?>> extends AbstractEmasAlgorithm<S, List<S
 
       EmasAgent<S> newAgent = new EmasAgent<>(solution, problem,
           startingEnergy, deathThreshold, reproductionThreshold, meetingCost, reproductionCost,
-          crossoverOperator, mutationOperator, dominanceComparator);
+          crossoverOperator, mutationOperator, dominanceComparator, neighbourhoodThreshold);
       population.add(newAgent);
     }
 

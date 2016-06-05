@@ -20,18 +20,17 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
 
   private final CrossoverOperator<S> crossoverOperator;
   private final MutationOperator<S> mutationOperator;
-  private final Comparator<S> dominanceComparator;
 
   protected EmasAgent(S solution, Problem problem, int startingEnergy,
                       int deathThreshold, int reproductionThreshold, int meetingCost, int reproductionCost,
                       CrossoverOperator<S> crossoverOperator, MutationOperator<S> mutationOperator,
-                      Comparator<S> dominanceComparator) {
-    super(solution, startingEnergy, deathThreshold, reproductionThreshold, meetingCost, reproductionCost);
+                      Comparator<S> dominanceComparator, double neighbourhoodThreshold) {
+    super(solution, startingEnergy, deathThreshold, reproductionThreshold, meetingCost, reproductionCost,
+        dominanceComparator, neighbourhoodThreshold);
     this.problem = problem;
     this.startingEnergy = startingEnergy;
     this.crossoverOperator = crossoverOperator;
     this.mutationOperator = mutationOperator;
-    this.dominanceComparator = dominanceComparator;
   }
 
   public S getSolution() {
@@ -55,23 +54,10 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     this.energyLevel += amount;
   }
 
-  private int compareDominatedCounter(AbstractEmasAgent<S> otherAgent) {
-    if (this.dominatedCounter < otherAgent.dominatedCounter) return -1;
-    if (this.dominatedCounter > otherAgent.dominatedCounter) return 1;
-    return 0;
-  }
-
-  protected int compare(AbstractEmasAgent<S> otherAgent) {
-    int compareResult = dominanceComparator.compare(this.solution, otherAgent.getSolution());
-    if (compareResult != 0) return compareResult;
-    return compareDominatedCounter(otherAgent);
-  }
-
   protected void meet(List<AbstractEmasAgent<S>> population) {
     EmasAgent<S> otherAgent = getRandomAgent(population);
 
-    this.meetingCounter++;
-    otherAgent.meetingCounter++;
+    meetWithAgent(otherAgent);
 
     EmasAgent<S> betterAgent;
     EmasAgent<S> worseAgent;
@@ -100,6 +86,16 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
     worseAgent.transferEnergy(-meetingCost);
   }
 
+  private void meetWithAgent(EmasAgent<S> otherAgent) {
+    this.meetingCounter++;
+    otherAgent.meetingCounter++;
+
+    if (checkNeighbour(otherAgent)) {
+      this.neighbourCounter++;
+      otherAgent.neighbourCounter++;
+    }
+  }
+
   @Override
   protected void reproduce(List<AbstractEmasAgent<S>> population) {
     List<AbstractEmasAgent<S>> possibleParents = population.stream().filter(
@@ -113,6 +109,8 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
 
     EmasAgent<S> otherParent = getRandomAgent(possibleParents);
 
+    meetWithAgent(otherParent);
+
     List<S> parents = new ArrayList<>(2);
     parents.add(this.getSolution());
     parents.add(otherParent.getSolution());
@@ -125,10 +123,10 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
 
     EmasAgent<S> firstChild = new EmasAgent<>(offspring.get(0), problem, startingEnergy,
         deathThreshold, reproductionThreshold, meetingCost, reproductionCost,
-        crossoverOperator, mutationOperator, dominanceComparator);
+        crossoverOperator, mutationOperator, dominanceComparator, 0);
     EmasAgent<S> secondChild = new EmasAgent<>(offspring.get(1), problem, startingEnergy,
         deathThreshold, reproductionThreshold, meetingCost, reproductionCost,
-        crossoverOperator, mutationOperator, dominanceComparator);
+        crossoverOperator, mutationOperator, dominanceComparator, 0);
 
     this.transferEnergy(-reproductionCost);
     otherParent.transferEnergy(-reproductionCost);
@@ -169,7 +167,7 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
         AbstractEmasAgent<S> agent1 = (AbstractEmasAgent<S>) wins.keySet().toArray()[i];
         AbstractEmasAgent<S> agent2 = (AbstractEmasAgent<S>) wins.keySet().toArray()[j];
 
-        int result = dominanceComparator.compare(agent1.getSolution(), agent2.getSolution());
+        int result = agent1.compareReproduction(agent2);
         if (result == 0) {
           wins.put(agent1, wins.get(agent1) + 1);
           wins.put(agent2, wins.get(agent2) + 1);
@@ -187,5 +185,20 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
         sorted(Map.Entry.comparingByValue()).
         forEachOrdered(e -> sorted.add(e.getKey()));
     return sorted.subList(2, 4);
+  }
+
+  public boolean checkNeighbour(AbstractEmasAgent<S> otherAgent) {
+    S mySolution = this.getSolution();
+    S otherSolution = otherAgent.getSolution();
+
+    for (int i = 0; i < mySolution.getNumberOfObjectives(); i++) {
+      double myObjective = mySolution.getObjective(i);
+      double otherOobjective = otherSolution.getObjective(i);
+      if (Math.abs(myObjective - otherOobjective) / Math.max(myObjective, otherOobjective) > this.neighbourhoodThreshold) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

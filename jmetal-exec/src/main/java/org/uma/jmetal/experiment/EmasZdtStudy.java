@@ -66,7 +66,7 @@ import java.util.List;
 
 public class EmasZdtStudy {
   private static final int INDEPENDENT_RUNS = 1 ;
-  private static final int ITERATIONS = 250;
+  private static final int ITERATIONS = 2500;
   private static final int POPULATION_SIZE = 100;
 
   public static void main(String[] args) throws IOException {
@@ -125,6 +125,7 @@ public class EmasZdtStudy {
               .setMeetingCost(2)
               .setReproductionCost(2)
               .setDeathThreshold(2)
+              .setNeighbourhoodThreshold(0.25)
               .build();
         algorithms.add(new TaggedAlgorithm<>(emas_algorithm, "EMAS", problemList.get(i), run));
 
