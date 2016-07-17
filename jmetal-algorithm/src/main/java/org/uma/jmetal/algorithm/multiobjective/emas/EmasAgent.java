@@ -38,12 +38,34 @@ public class EmasAgent<S extends Solution<?>> extends AbstractEmasAgent<S> {
   }
 
   @Override
-  protected void die() {
+  protected void die(List<AbstractEmasAgent<S>> population) {
     System.out.println("Death!");
+    S solution;
 
     this.printStats();
 
-    S solution = (S) problem.createSolution();
+    List<AbstractEmasAgent<S>> possibleParents = population.stream().filter(
+        a -> (a.getEnergyLevel() > reproductionThreshold && a != this)
+    ).collect(Collectors.toList());
+
+
+    if (possibleParents.size() < 1) {
+      solution = getRandomAgent(population).getSolution();
+    } else if (possibleParents.size() == 1) {
+      solution = getRandomAgent(possibleParents).getSolution();
+    } else {
+
+      List<S> parents = new ArrayList<>(2);
+      parents.add(possibleParents.get(0).getSolution());
+      parents.add(possibleParents.get(1).getSolution());
+
+      List<S> offspring = crossoverOperator.execute(parents);
+      mutationOperator.execute(offspring.get(0));
+      solution = offspring.get(0);
+    }
+
+//    solution = (S) problem.createSolution();
+
     problem.evaluate(solution);
 
     this.energyLevel = startingEnergy;

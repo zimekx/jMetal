@@ -35,8 +35,8 @@ import java.util.List;
 
 public class SmartLeveesStudy {
   private static final int INDEPENDENT_RUNS = 1;
-  private static final int ITERATIONS = 10;
-  private static final int POPULATION_SIZE = 5;
+  private static final int ITERATIONS = 250;
+  private static final int POPULATION_SIZE = 100;
 
   public static void main(String[] args) throws IOException {
 //    if (args.length != 1) {

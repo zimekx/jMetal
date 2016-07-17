@@ -44,7 +44,7 @@ public abstract class AbstractEmasAgent<S extends Solution> {
 
   public abstract S getSolution();
 
-  protected abstract void die();
+  protected abstract void die(List<AbstractEmasAgent<S>> population);
 
   protected abstract void meet(List<AbstractEmasAgent<S>> population);
 
@@ -56,7 +56,7 @@ public abstract class AbstractEmasAgent<S extends Solution> {
 
   public void executeLifeStep(List<AbstractEmasAgent<S>> population) {
     if (this.energyLevel <= this.deathThreshold) {
-      die();
+      die(population);
       return;
     }
 
